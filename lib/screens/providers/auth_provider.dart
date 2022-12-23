@@ -1,14 +1,19 @@
 import 'dart:math';
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+
+import '../auth/otp_screen.dart';
+import '../profile_screens/profile_detail.dart';
 
 class AuthenticationProvider extends ChangeNotifier {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  String verificationid = "";
-  Future<void> verifyPhone(String? countryCode, String mobile) async {
+  static String _verificationId = "";
+  verifyPhone(String? countryCode, String mobile, BuildContext context) async {
+    String phoneNumber = countryCode! + mobile;
     try {
       await _firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
         verificationCompleted: (AuthCredential phoneAuthCredential) {
           print(phoneAuthCredential);
         },
@@ -16,13 +21,15 @@ class AuthenticationProvider extends ChangeNotifier {
           throw exception;
         },
         codeSent: (String verId, int? forceCodeResend) {
-          this.verificationid = verId;
+          _verificationId = verId;
+          notifyListeners();
+          Navigator.pushNamed(context, OtpScreen.routeName);
         },
         codeAutoRetrievalTimeout: (String verId) {
-          this.verificationid = verId;
+          _verificationId = verId;
         },
         timeout: const Duration(
-          seconds: 300,
+          seconds: 120,
         ),
       );
     } on FirebaseAuthException catch (error) {
@@ -30,20 +37,26 @@ class AuthenticationProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> verifyOtp(String otp) async {
+  verifyOtp(String otp, BuildContext context) async {
     try {
+      print("verid -> ${_verificationId}");
+
       final AuthCredential authCredential = await PhoneAuthProvider.credential(
-        verificationId: this.verificationid,
+        verificationId: _verificationId,
         smsCode: otp,
       );
+      print("yes here ");
       if (authCredential != null) {
         final UserCredential user = await _firebaseAuth.signInWithCredential(authCredential);
         final User currentUser = await _firebaseAuth.currentUser!;
+        print("user signed in ");
+        Navigator.pushNamed(context, ProfileDetail.routeName);
       } else {
         throw e;
       }
     } on FirebaseAuthException catch (error) {
       print("--> ${error.toString()}");
     }
+    return;
   }
 }

@@ -1,3 +1,4 @@
+import 'package:dating_app/global_methods/global_methods.dart';
 import 'package:dating_app/screens/auth/otp_screen.dart';
 import 'package:dating_app/screens/providers/auth_provider.dart';
 import 'package:dating_app/screens/widgets/account_botton.dart';
@@ -15,6 +16,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
   late FlCountryCodePicker countryPicker;
   late CountryCode? countryCode;
   final TextEditingController _numberController = TextEditingController();
+  bool _isLoading = false;
   @override
   void initState() {
     final favouritesCountries = ['IN', 'CA', 'US', 'JP'];
@@ -104,13 +106,39 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
               const SizedBox(height: 50),
               InkWell(
                 onTap: () async {
-                  // await AuthenticationProvider().verifyPhone(
-                  //   countryCode?.dialCode.toString(),
-                  //   _numberController.text.toString(),
-                  // );
-                  Navigator.pushNamed(context, OtpScreen.routeName);
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  if (_numberController.text.length == 10) {
+                    await AuthenticationProvider().verifyPhone(
+                      countryCode?.dialCode.toString(),
+                      _numberController.text.toString(),
+                      context,
+                    );
+                  } else {
+                    GlobalMethods.generateToast(context, "Please enter valid number");
+                  }
+
+                  setState(() {
+                    _isLoading = false;
+                  });
                 },
-                child: AccountButton(text: "Continue", color: Colors.pink.shade400, textColor: Colors.white),
+                child: _isLoading == false
+                    ? AccountButton(text: "Continue", color: Colors.pink.shade400, textColor: Colors.white)
+                    : Container(
+                        width: double.maxFinite,
+                        height: 50,
+                        margin: const EdgeInsets.symmetric(horizontal: 30),
+                        decoration: BoxDecoration(
+                          color: Colors.pink.shade400,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
               ),
             ],
           ),

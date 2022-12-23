@@ -4,15 +4,22 @@ import 'package:dating_app/screens/widgets/account_botton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 
-class OtpScreen extends StatelessWidget {
+class OtpScreen extends StatefulWidget {
   static const String routeName = "/otpScreen";
   OtpScreen({Key? key}) : super(key: key);
-  Color accentPurpleColor = Color(0xFF6A53A1);
-  Color primaryColor = Color(0xFF121212);
-  Color accentPinkColor = Color(0xFFF99BBD);
-  Color accentDarkGreenColor = Color(0xFF115C49);
-  Color accentYellowColor = Color(0xFFFFB612);
-  Color accentOrangeColor = Color(0xFFEA7A3B);
+  @override
+  State<OtpScreen> createState() => _OtpScreenState();
+}
+
+class _OtpScreenState extends State<OtpScreen> {
+  String _otp = "";
+  bool _isLoading = false;
+  Color accentPurpleColor = const Color(0xFF6A53A1);
+  Color primaryColor = const Color(0xFF121212);
+  Color accentPinkColor = const Color(0xFFF99BBD);
+  Color accentDarkGreenColor = const Color(0xFF115C49);
+  Color accentYellowColor = const Color(0xFFFFB612);
+  Color accentOrangeColor = const Color(0xFFEA7A3B);
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +33,8 @@ class OtpScreen extends StatelessWidget {
       createStyle(accentYellowColor),
       createStyle(accentDarkGreenColor),
       createStyle(accentOrangeColor),
+      createStyle(accentPinkColor),
+      createStyle(primaryColor),
     ];
     return Scaffold(
       backgroundColor: Colors.white,
@@ -45,31 +54,41 @@ class OtpScreen extends StatelessWidget {
             ),
             const SizedBox(height: 50),
             OtpTextField(
-              numberOfFields: 4,
+              numberOfFields: 6,
               borderColor: accentPurpleColor,
               focusedBorderColor: accentPurpleColor,
               styles: otpTextStyles,
               showFieldAsBox: false,
               borderWidth: 4.0,
-              //runs when a code is typed in
-              onCodeChanged: (String code) {
-                //handle validation or checks here if necessary
-              },
-              //runs when every textfield is filled
+              onCodeChanged: (String code) {},
               onSubmit: (String verificationCode) async {
-                // await AuthenticationProvider().verifyOtp(verificationCode);
-                Navigator.pushNamed(context, ProfileDetail.routeName);
+                _otp = verificationCode;
+                setState(() {});
+                // await AuthenticationProvider().verifyOtp(verificationCode,context);
+                // Navigator.pushNamed(context, ProfileDetail.routeName);
               },
             ),
             const SizedBox(
               height: 50,
             ),
             InkWell(
-              onTap: () {
-                // AuthenticationProvider().verifyOtp();
-                Navigator.pushNamed(context, ProfileDetail.routeName);
+              onTap: () async {
+                setState(() {
+                  _isLoading = true;
+                });
+
+                await AuthenticationProvider().verifyOtp(_otp, context);
+                setState(() {
+                  _isLoading = false;
+                });
               },
-              child: AccountButton(text: "Verify", color: Colors.pink.shade400, textColor: Colors.white),
+              child: _isLoading == true
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.blue,
+                      ),
+                    )
+                  : AccountButton(text: "Verify", color: Colors.pink.shade400, textColor: Colors.white),
             ),
             const SizedBox(height: 20),
             Padding(

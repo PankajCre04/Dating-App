@@ -3,6 +3,7 @@ import 'package:dating_app/screens/auth/otp_screen.dart';
 import 'package:dating_app/screens/auth/sign_up_screen.dart';
 import 'package:dating_app/screens/home_screen/home_screen.dart';
 import 'package:dating_app/screens/profile_screens/profile_detail.dart';
+import 'package:dating_app/screens/providers/auth_provider.dart';
 import 'package:dating_app/splash_screen.dart';
 import 'package:flutter/material.dart';
 
